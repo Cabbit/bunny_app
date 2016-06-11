@@ -1,0 +1,6 @@
+[submodule "bunny"]
+	path = bunny
+	url = git@github.com:Cabbit/bunny
+[submodule "bunny-gallery-service"]
+	path = bunny-gallery-service
+	url = git@github.com:Cabbit/bunny-gallery-service.git

@@ -1,0 +1,60 @@
+varnishLB:
+  image: tutum/varnish:4.0
+  environment:
+    CONTENT: '-f /etc/varnish/default.vcl'
+  links:
+    - bunny
+    - galleryservice
+  ports:
+    - '80:80'
+  volumes:
+    - ./varnish:/etc/varnish
+bunny:
+  build: bunny
+  volumes:
+    - ./bunny:/var/www/bunny
+  environment:
+    REDIS_URL: redis://redis:6379
+    DATABASE_USERNAME: bunny
+    DATABASE_PASSWORD: bunny
+    DATABASE_HOST: db
+    DATABASE_DATABASE: bunny
+    SECRET_KEY_BASE: bunnies
+  links:
+    - redis
+    - db
+  ports:
+    - '5001:5000'
+  command: foreman start
+galleryservice:
+  volumes:
+    - ./bunny-gallery-service:/var/www/bunny/
+  build: bunny-gallery-service
+  environment:
+    DATABASE_USERNAME: bunny
+    DATABASE_PASSWORD: bunny
+    DATABASE_HOST: db
+    DATABASE_DATABASE: bunny
+    S3_BUCKET: "${S3_BUCKET}"
+    S3_ACCESS_KEY: "${S3_ACCESS_KEY}"
+    S3_SECRET: "${S3_SECRET}"
+    REDIS_URL: redis://redis:6379
+  links:
+    - redis
+    - db
+  ports:
+    - '5002:5000'
+  command: foreman start
+redis:
+  image: redis
+  ports:
+    - '6379:6379'
+db:
+  image: mysql:5.7
+  ports:
+    - "3306:3306"
+  environment:
+    MYSQL_DATABASE: bunny
+    MYSQL_ROOT_PASSWORD: bunny
+    MYSQL_USER: bunny
+    MYSQL_PASSWORD: bunny
